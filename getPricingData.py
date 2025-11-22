@@ -2,6 +2,7 @@ import math
 import requests
 from time import sleep
 from csvUtils import saveInfoToCSV
+from propertyUtils import getSocietyAmenitiesFromProperty
 
 PAGE_SIZE = 30  # page size for paginated API - increase if you're in a hurry, but don't be too greedy :)
 CSV_FILE_NAME = "./output/Solapur.csv"  # the file where you want your data stored
@@ -55,37 +56,7 @@ def makeRequest(pageNumber: int) -> requests.Response:
         ENDPOINT,
         params=params,
         headers=headers,
-        json=getJSONPayloadforPageRequest(pageNumber=pageNumber),
-    )
-
-def getSocietyAmenitiesFromProperty(property: dict) -> str:
-    """
-    This method takes in a single property, extracts the list of
-    amenities and returns all amenities as a comma separated str.
-    """
-    societyAmenities = 'NA'
-    if (
-        not property
-    ) or (
-        not property["details"]
-    ) or (
-        not property["details"]["amenities"]
-    ) or len(property["details"]["amenities"]) == 0: return societyAmenities # which is NA at this point
-
-    societyAmenitiesList = []
-
-    for amenity in property["details"]["amenities"]:
-        # found amenities of the type society amenities
-        if amenity["type"] == SOCIETY_AMENITIES_KEY:
-            societyAmenitiesList = amenity["data"]
-            break
-    
-    # no society amenities found
-    if len(societyAmenitiesList) == 0: return societyAmenities # which is NA at this point
-
-    return ", ".join(societyAmenitiesList)
-
-def pushResponseToCSV(jsonResponse: dict) -> None:
+def pushResponseToCSV(city: str, jsonResponse: dict) -> None:
     """
     This method accepts the JSON response of the api, massages
     the data, structures it to fit in a CSV format and saves it
